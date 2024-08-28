@@ -1164,42 +1164,52 @@ def search_reviews_by_title(title):
 
 #=========================user can add review=========================================
 
-# def add_review_u(user_id):
-#     print_header("Add a Review")
-#
-#     book_name = input("Enter the Book Name: ")
-#
-#     # Check if the book exists in the borrowed_books table for the given user_id
-#     cursor.execute("""
-#         SELECT b.book_id
-#         FROM borrowed_books bb
-#         JOIN books b ON bb.book_id = b.book_id
-#         WHERE bb.user_id = %s AND b.title = %s
-#     """, (user_id, book_name))
-#     result = cursor.fetchone()
-#
-#     # Ensure that any unread results are fetched
-#     cursor.fetchall()
-#
-#     if result:
-#         book_id = result[0]
-#         rating = input("Enter your Rating (1-5): ")
-#         review_text = input("Enter your Review: ")
-#
-#         # Insert the review into the reviews table
-#         cursor.execute("""
-#             INSERT INTO reviews (user_id, book_id, rating, review_text)
-#             VALUES (%s, %s, %s, %s)
-#         """, (user_id, book_id, rating, review_text))
-#
-#         # Commit the transaction to save the review
-#         db_connection.commit()
-#
-#         print("Review added successfully!")
-#     else:
-#         print("You cannot add a review for this book as it does not exist in your borrowed books.")
-#
-#     input("\nPress Enter to go back...")
+def add_review_u(user_id):
+    print_header("Add a Review", '-')
+
+    book_name = prompt_input("Enter the Book Name: ")
+
+    # Check if the book exists in the borrowed_books table for the given user_id
+    cursor.execute("""
+        SELECT b.book_id
+        FROM borrowed_books bb
+        JOIN books b ON bb.book_id = b.book_id
+        WHERE bb.user_id = %s AND b.title = %s
+    """, (user_id, book_name))
+    result = cursor.fetchone()
+
+    # Ensure that any unread results are fetched
+    cursor.fetchall()
+
+    if result:
+        book_id = result[0]
+
+        # Input validation for rating
+        while True:
+            try:
+                rating = int(prompt_input("Enter your Rating (1-5): "))
+                if rating < 1 or rating > 5:
+                    print("Rating must be between 1 and 5. Please try again.")
+                else:
+                    break  # Valid rating, exit the loop
+            except ValueError:
+                print("Invalid input. Please enter a numeric value between 1 and 5.")
+
+        review_text = prompt_input("Enter your Review: ")
+
+        # Insert the review into the reviews table with borrow_id as NULL
+        cursor.execute("""
+            INSERT INTO reviews (user_id, book_id, rating, review_text, borrow_id)
+            VALUES (%s, %s, %s, %s, NULL)
+        """, (user_id, book_id, rating, review_text))
+
+        # Commit the transaction to save the review
+        db.commit()
+
+        print("Review added successfully!")
+    else:
+        print("You cannot add a review for this book as it does not exist in your borrowed books.")
+
 
 
 
